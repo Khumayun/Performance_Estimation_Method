@@ -29,7 +29,11 @@ from sklearn.impute import SimpleImputer
 
 def preprocess(path_to_file, verbal=False):
     df = pd.read_csv(path_to_file)
-    df = df.drop(['repo_fullname','id'],axis=1)
+    df = df.drop(['repo_fullname'],axis=1)
+    try:
+        df = df.drop(['id'],axis=1)
+    except Exception as e:
+        pass
     df.isnull().sum().sum()
     df.dtypes.value_counts()
     # df[df.columns[df.isnull().any()]]
@@ -72,8 +76,8 @@ def full_analysis(path_to_file):
     # pvalues
     p_values(df, sort_p)
     # mlt table
-    fig, ax = render_mpl_table(df, header_columns=0, col_width=3.0, )
-    fig.savefig("results/table_mlp.png")
+    # fig, ax = render_mpl_table(df, header_columns=0, col_width=3.0, )
+    # fig.savefig("results/table_mlp.png")
     # ks statistics
     ks_qq(df)
 
@@ -88,6 +92,7 @@ def ks_qq(imp_df):
     plt.plot(base_norm[:-1], cumulative_norm, c='green', label='Normal CDF')
     plt.legend(loc="upper left")
     plt.savefig('results/ks.png', bbox_inches='tight')
+    plt.clf()
 
     # measurements = np.random.normal(loc = 20, scale = 5, size=100)
     stats.probplot(data_, dist="norm", plot=pylab)
@@ -168,6 +173,7 @@ def correlation(dataset, threshold, method):
     _, pear_cols = get_unique_features(sort_pear[:3])
     sns.pairplot(dataset[list(pear_cols)])
     plt.savefig('results/pairplot_correlations'+method+'.png')
+    plt.clf()
     return corr_ls, sort_pear
 
 
@@ -194,6 +200,7 @@ def factor_analysis_and_tsne(imp_df):
     plt.ylabel('Eigenvalue')
     plt.grid()
     plt.savefig('results/eigenscree.png')
+    plt.clf()
     # plt.show()
 
     fa = FactorAnalyzer(6, rotation="varimax")
@@ -233,6 +240,7 @@ def factor_analysis_and_tsne(imp_df):
         alpha=0.3
     )
     plt.savefig('results/tsne_for_repo_age_days.png')
+    plt.clf()
 
     return factor_df.max(axis=0), X_train, X_test, y_train, y_test
 
@@ -282,6 +290,7 @@ def cca(imp_df):
       plt.text(x,y,imp_df.columns[var_i], color='red' if var_i >= 5 else 'blue')
 
     plt.savefig('results/cca_rotations.png')
+    plt.clf()
 
 def sem(imp_df):
     # Specify the model relations using the same syntax given before
@@ -337,6 +346,7 @@ def regressions(X_train, X_test, y_train, y_test):
     plot_confusion_matrix(gsv, X_test, y_test)
     plt.show()
     plt.savefig('gsv_X_test_confusionMatrix.png')
+    plt.clf()
 
     ########### KMeans ##############
     k_candidates = range(1, 8)
@@ -349,6 +359,7 @@ def regressions(X_train, X_test, y_train, y_test):
     plt.xlabel("Number of clusters")
     plt.ylabel("Inertia")
     plt.savefig('results/kmeans')
+    plt.clf()
 
     kmeans = KMeans(n_clusters=6, init='k-means++', random_state=0).fit(X_train)
     labels = kmeans.labels_
